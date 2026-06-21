@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exoplanet Hunter V1</title>
+    <style>
+        :root {
+            --bg: #070912;
+            --panel: rgba(14, 20, 34, 0.92);
+            --panel-2: rgba(8, 13, 24, 0.92);
+            --cyan: #27d8ff;
+            --green: #5dfc9d;
+            --yellow: #ffd166;
+            --red: #ff5d73;
+            --text: #edf7ff;
+            --muted: #8ea7b8;
+            --border: rgba(39, 216, 255, 0.24);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(39, 216, 255, 0.11), transparent 28rem),
+                radial-gradient(circle at 80% 15%, rgba(93, 252, 157, 0.08), transparent 24rem),
+                var(--bg);
+            color: var(--text);
+            font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+        }
+
+        .wrap {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 44px;
+        }
+
+        header, .panel, .plot-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.32);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+
+        h1, h2, h3, p { margin: 0; }
+        h1 { font-size: clamp(20px, 3vw, 32px); color: var(--cyan); letter-spacing: 0; }
+        h2 { font-size: 16px; color: var(--cyan); margin-bottom: 12px; }
+        h3 { font-size: 14px; color: var(--cyan); margin-bottom: 10px; }
+        p { color: var(--muted); line-height: 1.55; }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--yellow);
+            box-shadow: 0 0 14px currentColor;
+        }
+
+        .dot.online { background: var(--green); }
+        .dot.offline, .dot.error { background: var(--red); }
+        .dot.processing { background: var(--yellow); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 18px;
+        }
+
+        .panel { padding: 20px; }
+
+        .dropzone {
+            min-height: 230px;
+            border: 2px dashed rgba(39, 216, 255, 0.65);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            padding: 24px;
+            cursor: pointer;
+            background: var(--panel-2);
+            transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+        }
+
+        .dropzone:hover, .dropzone.drag {
+            border-color: var(--green);
+            background: rgba(18, 34, 39, 0.96);
+            transform: translateY(-1px);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--cyan);
+            margin-bottom: 14px;
+        }
+
+        input[type="file"] { display: none; }
+
+        button, .link-button {
+            border: 1px solid rgba(39, 216, 255, 0.48);
+            background: rgba(39, 216, 255, 0.12);
+            color: var(--text);
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover, .link-button:hover { border-color: var(--green); }
+        button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .step {
+            background: var(--panel-2);
+            border: 1px solid rgba(39, 216, 255, 0.16);
+            border-radius: 6px;
+            padding: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .step.active { color: var(--yellow); border-color: rgba(255, 209, 102, 0.55); }
+        .step.done { color: var(--green); border-color: rgba(93, 252, 157, 0.45); }
+
+        .hidden { display: none !important; }
+
+        .results {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(280px, 0.9fr);
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .plots {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .plot-card { padding: 12px; }
+        .plot-card img {
+            width: 100%;
+            height: 270px;
+            object-fit: contain;
+            background: #02040a;
+            border: 1px solid rgba(39, 216, 255, 0.14);
+            border-radius: 6px;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: minmax(110px, 0.85fr) minmax(0, 1fr);
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(39, 216, 255, 0.12);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .kv strong { color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+
+        .candidate {
+            border-left: 3px solid var(--yellow);
+            background: var(--panel-2);
+            padding: 14px;
+            border-radius: 6px;
+        }
+
+        .scorebar {
+            height: 9px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .scorebar span {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--yellow), var(--green));
+        }
+
+        .list {
+            margin: 10px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .alert {
+            margin-top: 14px;
+            color: var(--yellow);
+            border: 1px solid rgba(255, 209, 102, 0.35);
+            background: rgba(255, 209, 102, 0.08);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .error {
+            margin-top: 14px;
+            color: #ffdce2;
+            border: 1px solid rgba(255, 93, 115, 0.5);
+            background: rgba(255, 93, 115, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .grid, .results, .plots { grid-template-columns: 1fr; }
+            header { align-items: flex-start; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>EXOPLANET HUNTER V1</h1>
+                <p>Backend FITS/TPF analysis dashboard</p>
+            </div>
+            <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">checking backend</span></div>
+        </header>
+
+        <main>
+            <section id="landing" class="grid">
+                <div class="panel">
+                    <h2>Upload TPF/FITS</h2>
+                    <label id="dropzone" class="dropzone" for="fileInput">
+                        <input id="fileInput" type="file" accept=".fits,.fit,.fz,.tpf">
+                        <div>
+                            <div class="upload-icon">⇧</div>
+                            <h3>Drop a file here or click to browse</h3>
+                            <p>Accepted: .fits, .fit, .fz, .tpf</p>
+                        </div>
+                    </label>
+                    <div class="actions">
+                        <button id="retryBtn" class="hidden">Retry Last File</button>
+                        <button id="resetBtn" class="hidden">New Analysis</button>
+                    </div>
+                    <div id="errorBox" class="error hidden"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Pipeline</h2>
+                    <p>This page sends one file to the FastAPI backend and displays the JSON report plus generated images.</p>
+                    <div id="steps" class="steps"></div>
+                    <div class="alert">Candidate only. This app never declares a confirmed planet.</div>
+                </div>
+            </section>
+
+            <section id="processing" class="panel hidden">
+                <h2>Analyzing File</h2>
+                <p id="processingText">Starting pipeline...</p>
+                <div id="processingSteps" class="steps"></div>
+            </section>
+
+            <section id="results" class="results hidden">
+                <div>
+                    <div class="panel" style="margin-bottom: 14px;">
+                        <h2>Analysis Results</h2>
+                        <p id="analysisId"></p>
+                        <div class="actions">
+                            <button id="newAnalysisBtn">New Analysis</button>
+                            <a id="reportLink" class="link-button" href="#" target="_blank" rel="noreferrer">Open JSON Report</a>
+                        </div>
+                    </div>
+                    <div id="plotGrid" class="plots"></div>
+                </div>
+
+                <aside>
+                    <div id="candidatePanel" class="panel"></div>
+                    <div id="metadataPanel" class="panel" style="margin-top: 14px;"></div>
+                </aside>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const API_ROOT_URL = window.location.origin.includes("localhost") ? "http://localhost:8000" : window.location.origin;
+        const API_BASE_URL = `${API_ROOT_URL}/api`;
+
+        const stages = [
+            "Read FITS",
+            "Extract metadata",
+            "Save target pixel image",
+            "Extract light curve",
+            "Flatten",
+            "Bin",
+            "Smooth",
+            "Period search",
+            "Fold",
+            "Detect candidates",
+            "Generate report",
+            "Save plots"
+        ];
+
+        const els = {
+            statusDot: document.getElementById("statusDot"),
+            statusText: document.getElementById("statusText"),
+            landing: document.getElementById("landing"),
+            processing: document.getElementById("processing"),
+            results: document.getElementById("results"),
+            dropzone: document.getElementById("dropzone"),
+            fileInput: document.getElementById("fileInput"),
+            errorBox: document.getElementById("errorBox"),
+            retryBtn: document.getElementById("retryBtn"),
+            resetBtn: document.getElementById("resetBtn"),
+            newAnalysisBtn: document.getElementById("newAnalysisBtn"),
+            steps: document.getElementById("steps"),
+            processingSteps: document.getElementById("processingSteps"),
+            processingText: document.getElementById("processingText"),
+            analysisId: document.getElementById("analysisId"),
+            reportLink: document.getElementById("reportLink"),
+            plotGrid: document.getElementById("plotGrid"),
+            candidatePanel: document.getElementById("candidatePanel"),
+            metadataPanel: document.getElementById("metadataPanel")
+        };
+
+        let lastFile = null;
+        let progressTimer = null;
+
+        function setStatus(status, label) {
+            els.statusDot.className = `dot ${status}`;
+            els.statusText.textContent = label;
+        }
+
+        function setView(view) {
+            els.landing.classList.toggle("hidden", view !== "landing");
+            els.processing.classList.toggle("hidden", view !== "processing");
+            els.results.classList.toggle("hidden", view !== "results");
+        }
+
+        function renderSteps(container, activeIndex = -1) {
+            container.innerHTML = stages.map((stage, index) => {
+                const state = index < activeIndex ? "done" : index === activeIndex ? "active" : "";
+                return `<div class="step ${state}">${index + 1}. ${stage}</div>`;
+            }).join("");
+        }
+
+        function showError(message) {
+            els.errorBox.textContent = message;
+            els.errorBox.classList.remove("hidden");
+        }
+
+        function clearError() {
+            els.errorBox.textContent = "";
+            els.errorBox.classList.add("hidden");
+        }
+
+        function outputUrl(path) {
+            if (!path) return null;
+            const normalized = String(path).replace(/\\/g, "/");
+            const marker = "outputs/";
+            const index = normalized.indexOf(marker);
+            if (index >= 0) return `${API_ROOT_URL}/${normalized.slice(index)}`;
+            if (normalized.startsWith("http")) return normalized;
+            return `${API_ROOT_URL}/${normalized}`;
+        }
+
+        function formatNumber(value, digits = 3, suffix = "") {
+            const number = Number(value);
+            return Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : "N/A";
+        }
+
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_ROOT_URL}/health`);
+                setStatus(response.ok ? "online" : "error", response.ok ? "backend online" : "backend error");
+            } catch {
+                setStatus("offline", "backend offline");
+            }
+        }
+
+        async function analyzeFile(file) {
+            if (!file) return;
+            lastFile = file;
+            clearError();
+            setView("processing");
+            setStatus("processing", "analyzing");
+            els.retryBtn.classList.add("hidden");
+            els.resetBtn.classList.add("hidden");
+
+            let active = 0;
+            renderSteps(els.processingSteps, active);
+            els.processingText.textContent = `Running analysis for ${file.name}`;
+            progressTimer = setInterval(() => {
+                active = Math.min(active + 1, stages.length - 1);
+                renderSteps(els.processingSteps, active);
+            }, 800);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch {
+                    data = null;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data?.detail || `Backend returned HTTP ${response.status}`);
+                }
+
+                clearInterval(progressTimer);
+                progressTimer = null;
+                renderSteps(els.processingSteps, stages.length);
+                renderResults(data);
+                setStatus("online", "analysis complete");
+                setView("results");
+            } catch (error) {
+                clearInterval(progressTimer);
+                progressTimer = null;
+                setStatus("error", "analysis failed");
+                setView("landing");
+                showError(error.message || "Analysis failed.");
+                els.retryBtn.classList.remove("hidden");
+            }
+        }
+
+        function renderResults(data) {
+            els.analysisId.textContent = `Analysis ID: ${data.analysis_id}`;
+            els.reportLink.href = outputUrl(data.report_path);
+
+            const plotEntries = [
+                ["Target Pixel Image", data.plots?.target_pixel_image],
+                ["Raw Light Curve", data.plots?.raw_light_curve],
+                ["Flattened Light Curve", data.plots?.flattened_light_curve],
+                ["Binned Light Curve", data.plots?.binned_light_curve],
+                ["Smoothed Light Curve", data.plots?.smoothed_light_curve],
+                ["Periodogram", data.plots?.periodogram],
+                ["Folded Light Curve", data.plots?.folded_light_curve]
+            ].filter(([, path]) => Boolean(path));
+
+            els.plotGrid.innerHTML = plotEntries.map(([title, path]) => {
+                const url = outputUrl(path);
+                return `
+                    <article class="plot-card">
+                        <h3>${title}</h3>
+                        <a href="${url}" target="_blank" rel="noreferrer">
+                            <img src="${url}" alt="${title}">
+                        </a>
+                    </article>
+                `;
+            }).join("");
+
+            renderCandidate(data.candidates?.[0]);
+            renderMetadata(data.metadata, data.light_curve, data.best_candidate_periods_days);
+        }
+
+        function renderCandidate(candidate) {
+            if (!candidate) {
+                els.candidatePanel.innerHTML = `<h2>Candidate</h2><p>No candidate periods were returned.</p>`;
+                return;
+            }
+
+            const stats = candidate.statistics || {};
+            const score = Number(candidate.confidence_score || 0);
+            const reasons = candidate.reasons || [];
+            const flags = candidate.possible_false_positive_flags || [];
+
+            els.candidatePanel.innerHTML = `
+                <h2>Candidate</h2>
+                <div class="candidate">
+                    <h3>Rank #${candidate.rank || 1}</h3>
+                    <p>Confidence Score: ${formatNumber(score * 100, 1, "%")}</p>
+                    <div class="scorebar"><span style="width: ${Math.max(0, Math.min(score * 100, 100))}%"></span></div>
+                    <div class="kv"><span>Period</span><strong>${formatNumber(stats.period_days, 5, " d")}</strong></div>
+                    <div class="kv"><span>Depth</span><strong>${formatNumber(stats.depth_ppm, 1, " ppm")}</strong></div>
+                    <div class="kv"><span>Duration</span><strong>${formatNumber(stats.duration_days, 4, " d")}</strong></div>
+                    <div class="kv"><span>SNR</span><strong>${formatNumber(stats.signal_to_noise, 2)}</strong></div>
+                    <div class="kv"><span>Events</span><strong>${stats.observed_transit_count ?? "N/A"}</strong></div>
+                </div>
+                <h3 style="margin-top: 14px;">Reasons</h3>
+                <ul class="list">${reasons.map(reason => `<li>${reason}</li>`).join("") || "<li>Candidate retained for review.</li>"}</ul>
+                <h3 style="margin-top: 14px;">Possible False Positive Flags</h3>
+                <ul class="list">${flags.map(flag => `<li>${flag}</li>`).join("") || "<li>No major flags returned.</li>"}</ul>
+                <div class="alert">Candidate only, not a confirmed discovery.</div>
+            `;
+        }
+
+        function renderMetadata(metadata = {}, lightCurve = {}, periods = []) {
+            const rows = [
+                ["Target ID", metadata.target_id],
+                ["Mission", metadata.mission],
+                ["Telescope", metadata.telescope],
+                ["Instrument", metadata.instrument],
+                ["Object", metadata.object_name],
+                ["RA", metadata.ra_deg],
+                ["Dec", metadata.dec_deg],
+                ["Points", lightCurve.point_count],
+                ["Duration", lightCurve.duration_days ? `${formatNumber(lightCurve.duration_days, 3)} d` : null],
+                ["Best Periods", periods?.length ? periods.map(p => formatNumber(p, 5)).join(", ") : null]
+            ];
+
+            els.metadataPanel.innerHTML = `
+                <h2>Metadata</h2>
+                ${rows.map(([key, value]) => `<div class="kv"><span>${key}</span><strong>${value ?? "N/A"}</strong></div>`).join("")}
+            `;
+        }
+
+        function resetDashboard() {
+            clearError();
+            els.fileInput.value = "";
+            els.resetBtn.classList.add("hidden");
+            setView("landing");
+            checkBackend();
+        }
+
+        els.dropzone.addEventListener("dragenter", event => {
+            event.preventDefault();
+            els.dropzone.classList.add("drag");
+        });
+        els.dropzone.addEventListener("dragover", event => event.preventDefault());
+        els.dropzone.addEventListener("dragleave", () => els.dropzone.classList.remove("drag"));
+        els.dropzone.addEventListener("drop", event => {
+            event.preventDefault();
+            els.dropzone.classList.remove("drag");
+            analyzeFile(event.dataTransfer.files[0]);
+        });
+        els.fileInput.addEventListener("change", event => analyzeFile(event.target.files[0]));
+        els.retryBtn.addEventListener("click", () => analyzeFile(lastFile));
+        els.resetBtn.addEventListener("click", resetDashboard);
+        els.newAnalysisBtn.addEventListener("click", resetDashboard);
+
+        renderSteps(els.steps);
+        checkBackend();
+    </script>
+</body>
+</html>
