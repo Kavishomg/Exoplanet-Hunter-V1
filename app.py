@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -58,6 +59,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+settings.ensure_directories()
+app.mount("/outputs", StaticFiles(directory=settings.output_dir), name="outputs")
 
 DASHBOARD_PATH = Path(__file__).parent / "dashboard.html"
 
