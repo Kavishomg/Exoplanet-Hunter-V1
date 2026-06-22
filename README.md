@@ -13,7 +13,7 @@ A web app that finds potential exoplanets in telescope data. Upload a FITS file,
 ### Option 1: Run Locally
 
 ```bash
-git clone [https://github.com/Kavishomg/Exoplanet-Hunter-V1.git](https://github.com/Kavishomg/Exoplanet-Hunter-V1.git)
+git clone https://github.com/Kavishomg/Exoplanet-Hunter-V1.git
 cd Exoplanet-Hunter-V1
 pip install -r requirements.txt
 uvicorn app:app --reload
@@ -25,7 +25,7 @@ Open `http://localhost:8000` in your browser. Upload a FITS file. Done.
 ### Option 2: Docker
 
 ```bash
-git clone [https://github.com/Kavishomg/Exoplanet-Hunter-V1.git](https://github.com/Kavishomg/Exoplanet-Hunter-V1.git)
+git clone https://github.com/Kavishomg/Exoplanet-Hunter-V1.git
 cd Exoplanet-Hunter-V1
 docker compose up
 
