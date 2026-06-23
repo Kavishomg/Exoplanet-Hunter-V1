@@ -168,6 +168,13 @@ This is version 1. Plans for future iterations:
 
 ---
 
+### AI Declaration:
+
+Ai assistance has been used in:
+- Designing the Frontend dashboard
+- suggesting content to make README helpful and informative
+- And helping to debug backend bugs and manage api code
+
 ## Contributing
 
 Got ideas or found a bug? Open an issue. Want to help? Fork it, make changes, and open a PR.
