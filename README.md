@@ -2,9 +2,12 @@
 
 A web app that finds potential exoplanets in telescope data. Upload a FITS file, get transit candidates, diagnostic plots, and a full analysis report.
 
-**[Try it live](https://exoplanet-hunter-v1.onrender.com/)** — upload any TESS or Kepler FITS file and see results in seconds.
+**[Try it live] https://exoplanet-hunter-v1.kavish.hackclub.app/ (preffered) or (https://exoplanet-hunter-v1.onrender.com/)** — upload any TESS or Kepler FITS file and see results in seconds.
 
-> ⚠️ **Note:** Hosted on a free tier, so the first request might take ~50s while the server wakes up. After that, it is fast.
+
+> ⚠️ **Note:** If using render link hosted on a free tier, the first request might take ~50s while the server wakes up. After that, it is fast.
+>
+> For Nest link, it's smooth like butter!
 
 ---
 
@@ -35,7 +38,7 @@ Same thing — opens at `http://localhost:8000`.
 
 ### Option 3: Just Use the Live Version
 
-No install needed. Go to [exoplanet-hunter-v1.onrender.com](https://exoplanet-hunter-v1.onrender.com/), drop a FITS file, and get your results.
+No install needed. Go to [exoplanet-hunter-v1.kavish.hackclub.app](https://exoplanet-hunter-v1.kavish.hackclub.app/) or [exoplanet-hunter-v1.onrender.com](https://exoplanet-hunter-v1.onrender.com/), drop a FITS file, and get your results.
 
 ---
 
@@ -138,10 +141,11 @@ exoplanet-hunter-v1/
 
 Works on any platform that runs Python. Tested on:
 
-* **Render** — Free tier, 512MB RAM. Uses ~37MB peak. [Deploy guide](https://render.com/docs)
-* **Railway** — Similar to Render, uses Procfile.
-* **Heroku** — Same Procfile works.
-* **Docker** — Works anywhere Docker runs.
+* **Render** - Free tier, 512MB RAM. Uses ~37MB peak. [Deploy guide](https://render.com/docs)
+* **Railway** - Similar to Render, uses Procfile.
+* **Heroku** - Same Procfile works.
+* **Nest** - Faster, Better.
+* **Docker** - Works anywhere Docker runs.
 
 **Memory Optimization:** Uses memory-mapped FITS reading, aggressive garbage collection, and scaled periodogram grids to stay under 50MB even for large files.
 
