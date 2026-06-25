@@ -87,7 +87,7 @@ async def health(request: Request) -> dict:
 
 
 @app.post("/api/analyze", response_model=AnalysisResponse)
-@limiter.limit("5/hour")
+@limiter.limit("100/hour")
 async def analyze_fits(request: Request, file: UploadFile = File(...)) -> AnalysisResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="A FITS/TPF file upload is required.")
