@@ -268,11 +268,11 @@
                 <div class="panel">
                     <h2>Upload TPF/FITS</h2>
                     <label id="dropzone" class="dropzone" for="fileInput">
-                        <input id="fileInput" type="file" accept=".fits,.fit,.fz,.tpf">
+                        <input id="fileInput" type="file" accept=".fits,.fit,.fz,.tpf,.fits.gz,.fit.gz">
                         <div>
                             <div class="upload-icon">⇧</div>
                             <h3>Drop a file here or click to browse</h3>
-                            <p>Accepted: .fits, .fit, .fz, .tpf</p>
+                            <p>Accepted: .fits, .fit, .fz, .tpf, .fits.gz</p>
                         </div>
                     </label>
                     <div class="actions">
@@ -280,7 +280,7 @@
                         <button id="resetBtn" class="hidden">New Analysis</button>
                     </div>
                     <div id="errorBox" class="error hidden"></div>
-                    <p style="margin-top: 12px; font-size: 12px;">Need a test file? Download a working FITS file from <a href="https://docs.lightkurve.org/reference/api/lightkurve.search_targetpixelfile.html" target="_blank" rel="noreferrer" style="color: var(--cyan);">lightkurve examples</a> or <a href="https://mast.stsci.edu" target="_blank" rel="noreferrer" style="color: var(--cyan);">MAST</a> (search for a TIC ID, download the <strong>Target Pixel</strong> product).</p>
+                    <p style="margin-top: 12px; font-size: 12px;">Need a test file? Download a working FITS file from <a href="https://lightkurve.github.io/lightkurve/tutorials" target="_blank" rel="noreferrer" style="color: var(--cyan);">lightkurve tutorials</a> or <a href="https://mast.stsci.edu" target="_blank" rel="noreferrer" style="color: var(--cyan);">MAST</a> (search for a TIC ID, download the <strong>Target Pixel</strong> or <strong>Light Curve</strong> product). Supports .fits, .fit, .fz, .tpf, and .fits.gz files.</p>
                 </div>
 
                 <div class="panel">

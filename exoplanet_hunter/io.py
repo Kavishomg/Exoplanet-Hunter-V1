@@ -1,3 +1,4 @@
+import gzip
 import logging
 import shutil
 from pathlib import Path
@@ -30,6 +31,20 @@ async def save_upload(file: UploadFile, settings: Settings, analysis_id: str) ->
 
     await file.close()
     logger.info("Saved upload %s (%d bytes)", target_path.name, size)
+
+    if target_path.suffix == ".gz":
+        fits_path = target_path.with_suffix("")
+        try:
+            with gzip.open(target_path, "rb") as f_in, fits_path.open("wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+            target_path.unlink()
+            logger.info("Decompressed %s -> %s", target_path.name, fits_path.name)
+            return fits_path
+        except Exception as exc:
+            target_path.unlink(missing_ok=True)
+            fits_path.unlink(missing_ok=True)
+            raise ValueError(f"Failed to decompress .gz file: {exc}") from exc
+
     return target_path
 
 

@@ -93,8 +93,8 @@ async def analyze_fits(request: Request, file: UploadFile = File(...)) -> Analys
         raise HTTPException(status_code=400, detail="A FITS/TPF file upload is required.")
 
     filename = file.filename.lower()
-    if not filename.endswith((".fits", ".fit", ".fz", ".tpf")):
-        raise HTTPException(status_code=400, detail="Upload must be a FITS/TPF file.")
+    if not filename.endswith((".fits", ".fit", ".fz", ".tpf", ".fits.gz", ".fit.gz")):
+        raise HTTPException(status_code=400, detail="Upload must be a FITS/TPF file (.fits, .fit, .fz, .tpf, or .fits.gz)")
 
     if settings.api_key:
         api_key = request.headers.get("X-API-Key", "")
