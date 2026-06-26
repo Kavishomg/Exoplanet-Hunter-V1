@@ -235,6 +235,9 @@
             background: rgba(255, 93, 115, 0.1);
             border-radius: 6px;
             padding: 12px;
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .actions {
@@ -277,6 +280,7 @@
                         <button id="resetBtn" class="hidden">New Analysis</button>
                     </div>
                     <div id="errorBox" class="error hidden"></div>
+                    <p style="margin-top: 12px; font-size: 12px;">Need a test file? Download a working FITS file from <a href="https://docs.lightkurve.org/reference/api/lightkurve.search_targetpixelfile.html" target="_blank" rel="noreferrer" style="color: var(--cyan);">lightkurve examples</a> or <a href="https://mast.stsci.edu" target="_blank" rel="noreferrer" style="color: var(--cyan);">MAST</a> (search for a TIC ID, download the <strong>Target Pixel</strong> product).</p>
                 </div>
 
                 <div class="panel">

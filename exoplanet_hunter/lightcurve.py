@@ -16,10 +16,22 @@ def load_light_curve(path: Path) -> lk.LightCurve:
     try:
         product = lk.read(path)
     except Exception as exc:
-        raise ValueError(f"Could not read FITS light curve or target pixel file: {exc}") from exc
+        raise ValueError(
+            f"Could not read FITS file: {exc}\n\n"
+            "This file is not a supported TESS/Kepler data product. "
+            "Supported files: Target Pixel Files (TPF) or Light Curve files from TESS or Kepler.\n\n"
+            "Where to get working files:\n"
+            "  - MAST Portal: https://mast.stsci.edu (search by TIC/Kepler ID, download TPF or LightCurve)\n"
+            "  - Lightkurve examples: https://docs.lightkurve.org\n\n"
+            "Tip: On MAST, look for products labeled 'Target Pixel' or 'Light Curve' — "
+            "not Full Frame Images, target tables, or other data products."
+        ) from exc
     light_curve = product.to_lightcurve(aperture_mask="pipeline") if hasattr(product, "to_lightcurve") else product
     if not isinstance(light_curve, lk.LightCurve):
-        raise ValueError("Uploaded FITS file did not contain a readable light curve.")
+        raise ValueError(
+            "Uploaded FITS file did not contain a readable light curve. "
+            "Please upload a Target Pixel File (TPF) or Light Curve file from TESS or Kepler."
+        )
     return light_curve
 
 
