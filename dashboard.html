@@ -1218,11 +1218,11 @@
         });
 
         // --- Konami Code Easter Egg ---
-        const konamiCode = [38,38,40,40,37,39,37,39,66,65];
+        const konamiCode = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
         let konamiIndex = 0;
         const easterEgg = document.getElementById('easterEgg');
         document.addEventListener('keydown', (e) => {
-            if (e.keyCode === konamiCode[konamiIndex]) {
+            if (e.key === konamiCode[konamiIndex]) {
                 e.preventDefault();
                 konamiIndex++;
                 if (konamiIndex === konamiCode.length) {
